@@ -1,0 +1,1 @@
+export const sensitiveAreasPrompt = "Identify areas agents must treat carefully: auth, permissions, secrets, env files, payments, personal data, infra, deployment, CI/CD, migrations, package publishing.";

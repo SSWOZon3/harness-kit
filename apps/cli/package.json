@@ -1,0 +1,22 @@
+{
+  "name": "harnesskit",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "harnesskit": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@harnesskit/core": "workspace:*",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
+    "ora": "^8.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

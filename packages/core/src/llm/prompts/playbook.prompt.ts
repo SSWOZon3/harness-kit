@@ -1,0 +1,1 @@
+export const playbookPrompt = "Generate repository-specific agent playbooks. Include add-feature, fix-bug, add-test, refactor-module, work-on-sensitive-area and add API/UI/data playbooks only when evidence supports them.";
