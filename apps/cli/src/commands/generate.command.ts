@@ -10,10 +10,11 @@ export function generateCommand(): Command {
     .option("--force", "Overwrite existing files", false)
     .option("--no-backup", "Do not create .bak.harnesskit backups")
     .option("--dry-run", "Run without writing files", false)
+    .option("--model <model>", "LLM model override")
     .action(async (options) => {
       try {
         const rootPath = resolveTargetPath(options.path);
-        const llm = createProvider();
+        const llm = createProvider(options.model);
         const snapshot = await readSnapshot(rootPath);
         const outputs = await withSpinner("Running HarnessKit agents", (progress) => {
           const orchestrator = new AgentOrchestrator(llm, progress);

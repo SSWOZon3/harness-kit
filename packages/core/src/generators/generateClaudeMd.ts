@@ -1,5 +1,5 @@
 import type { AgentOutputs, GeneratedFile } from "@harnesskit/shared";
-import { formatMarkdown, list } from "../output/formatMarkdown.js";
+import { formatMarkdown, list, validationMarker } from "../output/formatMarkdown.js";
 
 export function generateClaudeMd(outputs: AgentOutputs): GeneratedFile {
   return {
@@ -7,30 +7,39 @@ export function generateClaudeMd(outputs: AgentOutputs): GeneratedFile {
     content: formatMarkdown(`
 # ${outputs.projectOverview.projectName}
 
-Read this before making changes. More detailed HarnessKit context lives in \`.harnesskit/\`.
+This repository has been prepared with HarnessKit for AI-assisted engineering. Keep changes focused, evidence-based, and aligned with the documented architecture.
 
-## Project Overview
+## Short Overview
 
 ${outputs.projectOverview.businessPurpose}
 
 - Type: ${outputs.projectOverview.projectType}
 - Runtime: ${outputs.projectOverview.runtimeContext}
-- Confidence: ${outputs.projectOverview.confidence}
+- Detailed context: \`.harnesskit/project.yml\`
 
-## Main Capabilities
+## Required Workflow For AI Agents
 
-${list(outputs.projectOverview.mainCapabilities)}
+1. Read this file.
+2. Identify the relevant domain/module.
+3. Read the closest playbook in \`.harnesskit/playbooks/\`.
+4. Inspect \`.harnesskit/sensitive-areas.md\`.
+5. Make a focused change.
+6. Run verification commands.
+7. Summarize risks and files changed.
 
-## Architecture
+## Architecture Summary
+
+${validationMarker(outputs.architecture)}
 
 - Style: ${outputs.architecture.architectureStyle}
+- Detailed architecture: \`.harnesskit/architecture.md\`
+- Domains: \`.harnesskit/domains.md\`
+- Data models: \`.harnesskit/data-models.md\`
 
 Key conventions:
 ${list(outputs.architecture.conventions)}
 
-See \`.harnesskit/architecture.md\` for layers and boundaries.
-
-## Workflow Commands
+## Commands
 
 - Install: ${outputs.workflow.installCommand ?? "Not detected"}
 - Dev: ${outputs.workflow.devCommand ?? "Not detected"}
@@ -41,17 +50,28 @@ See \`.harnesskit/architecture.md\` for layers and boundaries.
 
 ## Sensitive Areas
 
-${outputs.sensitiveAreas.sensitiveAreas.map((area) => `- ${area.name} (${area.severity}): ${area.pathPatterns.join(", ")}`).join("\n") || "- None detected. Validate manually."}
+${outputs.sensitiveAreas.sensitiveAreas.map((area) => `- ${area.name} (${area.severity}): ${area.pathPatterns.join(", ")}${area.requiresHumanValidation ? " - requires human validation" : ""}`).join("\n") || "- None detected. Validate manually."}
 
-## Agent Rules
+## Playbook Usage
 
-- Follow existing architecture and naming conventions.
-- Keep changes focused to the requested task.
-- Use the closest playbook in \`.harnesskit/playbooks/\`.
-- Do not edit secrets, env files, auth, permissions, payments, migrations, infrastructure, or CI/CD unless explicitly requested.
-- If a conclusion is inferred rather than evidenced, say so.
+Use the closest playbook before editing:
+${list(outputs.playbooks.playbooks.map((playbook) => `\`.harnesskit/playbooks/${playbook.id}.md\` - ${playbook.title}${playbook.requiresHumanValidation ? " (manual validation recommended)" : ""}`))}
 
-## Definition of Done
+## Rules For Uncertainty
+
+- Do not invent architecture, commands, integrations, or business rules.
+- If something is inferred, say: "Inferred from repository structure; requires human validation."
+- Cite concrete files when explaining decisions.
+- Ask for human review before changing sensitive areas.
+
+## Before Editing
+
+- Read the files listed by the selected playbook.
+- Check whether the target files are in a sensitive area.
+- Prefer existing patterns over new abstractions.
+- Keep the change small enough to review.
+
+## Definition Of Done
 
 ${list(outputs.workflow.definitionOfDone)}
 `)

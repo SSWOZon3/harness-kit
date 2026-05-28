@@ -11,10 +11,24 @@ export type FileContent = {
   content: string;
 };
 
+export type ConfidenceMarker = {
+  confidence: number;
+  inferred: boolean;
+  requiresHumanValidation: boolean;
+};
+
 export type ImportantFile = {
   path: string;
   reason: string;
   contentPreview?: string;
+};
+
+export type ModuleSummary = {
+  name: string;
+  rootPath: string;
+  fileCount: number;
+  sampledFiles: string[];
+  reason: string;
 };
 
 export type RepositorySnapshot = {
@@ -27,6 +41,9 @@ export type RepositorySnapshot = {
   sourceSamples: FileContent[];
   testSamples: FileContent[];
   packageFiles: FileContent[];
+  moduleSummaries?: ModuleSummary[];
+  selectedModules?: string[];
+  selectionWarnings?: string[];
 };
 
 export type GeneratedFile = {
@@ -46,7 +63,7 @@ export type ProjectOverviewOutput = {
   evidence: Evidence[];
 };
 
-export type ArchitectureOutput = {
+export type ArchitectureOutput = ConfidenceMarker & {
   architectureStyle: string;
   layers: Array<{
     name: string;
@@ -88,7 +105,7 @@ export type DomainModelOutput = {
 };
 
 export type CriticalFlowsOutput = {
-  flows: Array<{
+  flows: Array<ConfidenceMarker & {
     name: string;
     description: string;
     entryPoints: string[];
@@ -96,6 +113,7 @@ export type CriticalFlowsOutput = {
     riskLevel: RiskLevel;
     whyCritical: string;
     agentGuidance: string;
+    evidence: Evidence[];
   }>;
 };
 
@@ -112,13 +130,14 @@ export type TestingOutput = {
 };
 
 export type SensitiveAreasOutput = {
-  sensitiveAreas: Array<{
+  sensitiveAreas: Array<ConfidenceMarker & {
     name: string;
     pathPatterns: string[];
     severity: RiskLevel;
     reason: string;
     requiredHumanReview: boolean;
     instructionsForAgents: string;
+    evidence: Evidence[];
   }>;
   secretsHandling: string[];
   riskyCommands: string[];
@@ -139,10 +158,17 @@ export type WorkflowOutput = {
     file: string;
     relevantCommands: string[];
   }>;
+  commandEvidence: Array<{
+    command: string;
+    sourceFile: string;
+    inferred: boolean;
+    confidence: number;
+    requiresHumanValidation: boolean;
+  }>;
   definitionOfDone: string[];
 };
 
-export type Playbook = {
+export type Playbook = ConfidenceMarker & {
   id: string;
   title: string;
   whenToUse: string;
@@ -167,6 +193,9 @@ export type FinalReviewOutput = {
   }>;
   recommendedManualReviewItems: string[];
   isReadyForClientDelivery: boolean;
+  clientDeliveryNotes: string[];
+  strongestGeneratedAssets: string[];
+  weakestGeneratedAssets: string[];
 };
 
 export type AgentOutputs = {

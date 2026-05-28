@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type { z } from "zod";
 import type { LlmProvider } from "./LlmProvider.js";
+import { generateJsonWithRepair } from "./JsonRepair.js";
 
 export type OpenAiProviderOptions = {
   apiKey?: string;
@@ -24,21 +25,27 @@ export class OpenAiProvider implements LlmProvider {
     systemPrompt: string;
     userPrompt: string;
     schemaName: string;
-    schema: z.ZodSchema<T>;
+    schema: z.ZodType<T, z.ZodTypeDef, unknown>;
   }): Promise<T> {
-    const response = await this.client.chat.completions.create({
-      model: this.model,
-      temperature: 0.2,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: `${params.systemPrompt}\nReturn only valid JSON for schema ${params.schemaName}. Do not wrap it in Markdown.` },
-        { role: "user", content: params.userPrompt }
-      ]
-    });
+    return generateJsonWithRepair({
+      ...params,
+      maxRetries: Number(process.env.HARNESSKIT_LLM_MAX_RETRIES ?? 2),
+      callModel: async ({ systemPrompt, userPrompt }) => {
+        const response = await this.client.chat.completions.create({
+          model: this.model,
+          temperature: 0.2,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ]
+        });
 
-    const raw = response.choices[0]?.message?.content;
-    if (!raw) throw new Error(`OpenAI returned an empty response for ${params.schemaName}.`);
-    return params.schema.parse(JSON.parse(raw));
+        const raw = response.choices[0]?.message?.content;
+        if (!raw) throw new Error(`OpenAI returned an empty response for ${params.schemaName}.`);
+        return raw;
+      }
+    });
   }
 
   async generateText(params: { systemPrompt: string; userPrompt: string }): Promise<string> {

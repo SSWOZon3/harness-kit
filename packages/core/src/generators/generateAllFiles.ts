@@ -29,6 +29,10 @@ export function generateAllFiles(snapshot: RepositorySnapshot, outputs: AgentOut
       content: `${JSON.stringify(outputs, null, 2)}\n`
     },
     {
+      path: ".harnesskit/internal/final-review.json",
+      content: `${JSON.stringify(outputs.finalReview, null, 2)}\n`
+    },
+    {
       path: ".harnesskit/internal/file-tree.md",
       content: `${snapshot.fileTree}\n`
     },

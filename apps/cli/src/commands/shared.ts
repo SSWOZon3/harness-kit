@@ -7,8 +7,8 @@ export function resolveTargetPath(value?: string): string {
   return path.resolve(value ?? process.cwd());
 }
 
-export function createProvider(): OpenAiProvider {
-  return new OpenAiProvider();
+export function createProvider(model?: string): OpenAiProvider {
+  return new OpenAiProvider({ model });
 }
 
 export async function withSpinner<T>(text: string, task: (progress: (message: string) => void) => Promise<T>): Promise<T> {

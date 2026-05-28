@@ -12,6 +12,16 @@ export function buildRepositoryContext(snapshot: RepositorySnapshot, previousOut
     "## Important files",
     JSON.stringify(snapshot.importantFiles, null, 2),
     "",
+    "## Deep module summaries",
+    snapshot.moduleSummaries && snapshot.moduleSummaries.length > 0
+      ? JSON.stringify(snapshot.moduleSummaries, null, 2)
+      : "Not enabled or no module summaries detected.",
+    "",
+    "## Selection warnings",
+    snapshot.selectionWarnings && snapshot.selectionWarnings.length > 0
+      ? snapshot.selectionWarnings.map((warning) => `- ${warning}`).join("\n")
+      : "None.",
+    "",
     "## Package files",
     renderFiles(snapshot.packageFiles),
     "",

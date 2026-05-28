@@ -1,5 +1,5 @@
 import type { AgentOutputs, GeneratedFile } from "@harnesskit/shared";
-import { evidence, formatMarkdown, list } from "../output/formatMarkdown.js";
+import { evidence, formatMarkdown, list, readinessLabel, validationMarker } from "../output/formatMarkdown.js";
 
 export function generateMarkdownDocs(outputs: AgentOutputs): GeneratedFile[] {
   return [
@@ -9,6 +9,8 @@ export function generateMarkdownDocs(outputs: AgentOutputs): GeneratedFile[] {
 # Architecture
 
 Style: ${outputs.architecture.architectureStyle}
+
+${validationMarker(outputs.architecture)}
 
 ## Layers
 
@@ -72,7 +74,7 @@ ${outputs.domainModel.apiContracts.map((contract) => `- ${contract.name}: ${cont
       content: formatMarkdown(`
 # Critical Flows
 
-${outputs.criticalFlows.flows.map((flow) => `## ${flow.name}\n\nRisk: ${flow.riskLevel}\n\n${flow.description}\n\nEntry points: ${flow.entryPoints.map((file) => `\`${file}\``).join(", ") || "Not detected"}\n\nModules: ${flow.involvedModules.join(", ") || "Not detected"}\n\nWhy critical: ${flow.whyCritical}\n\nAgent guidance: ${flow.agentGuidance}`).join("\n\n") || "No critical flows detected with confidence."}
+${outputs.criticalFlows.flows.map((flow) => `## ${flow.name}\n\nRisk: ${flow.riskLevel}\n\n${validationMarker(flow)}\n\n${flow.description}\n\nEntry points: ${flow.entryPoints.map((file) => `\`${file}\``).join(", ") || "Not detected"}\n\nModules: ${flow.involvedModules.join(", ") || "Not detected"}\n\nWhy critical: ${flow.whyCritical}\n\nAgent guidance: ${flow.agentGuidance}\n\nEvidence:\n${evidence(flow.evidence)}`).join("\n\n") || "No critical flows detected with confidence."}
 `)
     },
     {
@@ -137,7 +139,7 @@ ${list(outputs.workflow.definitionOfDone)}
       content: formatMarkdown(`
 # Sensitive Areas
 
-${outputs.sensitiveAreas.sensitiveAreas.map((area) => `## ${area.name}\n\nSeverity: ${area.severity}\n\nPaths: ${area.pathPatterns.map((item) => `\`${item}\``).join(", ") || "Not detected"}\n\nReason: ${area.reason}\n\nHuman review required: ${area.requiredHumanReview ? "yes" : "no"}\n\nAgent instructions: ${area.instructionsForAgents}`).join("\n\n") || "No sensitive areas detected. Validate manually before client delivery."}
+${outputs.sensitiveAreas.sensitiveAreas.map((area) => `## ${area.name}\n\nSeverity: ${area.severity}\n\n${validationMarker(area)}\n\nPaths: ${area.pathPatterns.map((item) => `\`${item}\``).join(", ") || "Not detected"}\n\nReason: ${area.reason}\n\nHuman review required: ${area.requiredHumanReview ? "yes" : "no"}\n\nAgent instructions: ${area.instructionsForAgents}\n\nEvidence:\n${evidence(area.evidence)}`).join("\n\n") || "No sensitive areas detected. Validate manually before client delivery."}
 
 ## Secrets handling
 
@@ -186,6 +188,85 @@ Review generated outputs before client delivery, especially sensitive areas, arc
 `)
     },
     {
+      path: ".harnesskit/executive-summary.md",
+      content: formatMarkdown(`
+# Executive Summary
+
+HarnessKit generated an AI-ready repository setup for ${outputs.projectOverview.projectName}. The setup gives coding agents project instructions, architecture context, sensitive-area policies, task playbooks, prompt templates, and verification expectations.
+
+## AI-Readiness
+
+Score: ${outputs.finalReview.overallQualityScore}/100 - ${readinessLabel(outputs.finalReview.overallQualityScore)}
+
+## What changed
+
+- Added AI agent instructions for Claude, Cursor, Codex, Copilot, and generic agents.
+- Added architecture, domain, data model, critical flow, testing, workflow, and sensitive-area documentation.
+- Added playbooks and prompt templates for common agent tasks.
+- Added manual review and delivery notes for consultant/client validation.
+
+## Consultant note
+
+This output is ready for manual consultant review. Validate inferred architecture, sensitive areas, commands, and weak playbooks before delivery.
+`)
+    },
+    {
+      path: ".harnesskit/manual-review-checklist.md",
+      content: formatMarkdown(`
+# Manual Review Checklist
+
+## Required consultant review
+
+${list(outputs.finalReview.recommendedManualReviewItems)}
+
+## Validate generated assets
+
+- Confirm \`CLAUDE.md\` and \`AGENTS.md\` are accurate and concise.
+- Confirm architecture boundaries match the real codebase.
+- Confirm workflow commands run locally or in CI.
+- Confirm sensitive areas are complete and conservative.
+- Confirm playbooks reference real files and useful commands.
+- Confirm inferred conclusions are clearly marked.
+
+## Final delivery decision
+
+- Score: ${outputs.finalReview.overallQualityScore}/100 - ${readinessLabel(outputs.finalReview.overallQualityScore)}
+- Client-deliverable after manual review: ${outputs.finalReview.isReadyForClientDelivery ? "yes" : "not yet"}
+`)
+    },
+    {
+      path: ".harnesskit/client-delivery-notes.md",
+      content: formatMarkdown(`
+# Client Delivery Notes
+
+## What was generated
+
+HarnessKit prepared this repository for AI coding agents by adding project-specific instructions, architecture maps, domain documentation, sensitive-area policies, playbooks, prompt templates, and verification guidance.
+
+## How to use it
+
+- Claude Code: start by reading \`CLAUDE.md\`.
+- Cursor: use \`.cursor/rules/harnesskit.mdc\` and ask Cursor to read \`AGENTS.md\`.
+- Codex: ask Codex to read \`AGENTS.md\` and the relevant playbook.
+- Copilot: repository guidance lives in \`.github/copilot-instructions.md\`.
+
+## Manual validation required
+
+${list(outputs.finalReview.recommendedManualReviewItems)}
+
+## Suggested first tasks
+
+${list(outputs.playbooks.playbooks.map((playbook) => `${playbook.title}: ${playbook.whenToUse}`))}
+
+## Limitations
+
+- Generated from selected repository evidence.
+- Some conclusions may be inferred and require validation.
+- AI-ready context improves agent reliability but does not guarantee perfect code.
+- Secrets and env files are ignored by default.
+`)
+    },
+    {
       path: ".harnesskit/pull-request-body.md",
       content: formatMarkdown(`
 # HarnessKit AI-Ready Setup
@@ -204,6 +285,10 @@ Generated:
 - Playbooks
 - Prompt pack
 - AI usage guide
+- Manual review checklist
+- Client delivery notes
+
+Final review score: ${outputs.finalReview.overallQualityScore}/100 - ${readinessLabel(outputs.finalReview.overallQualityScore)}
 
 Manual review recommended before relying on the generated instructions for sensitive work.
 `)

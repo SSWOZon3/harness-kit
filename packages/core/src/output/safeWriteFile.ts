@@ -28,5 +28,5 @@ export async function safeWriteFile(options: SafeWriteFileOptions): Promise<{ pa
   }
 
   await fs.writeFile(target, options.content, "utf8");
-  return { path: options.relativePath, backedUp: exists && backup, skipped: false };
+  return { path: options.relativePath, backedUp: exists && backup && !options.force, skipped: false };
 }

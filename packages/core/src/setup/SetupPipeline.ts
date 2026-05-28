@@ -13,6 +13,9 @@ export type SetupPipelineOptions = {
   force?: boolean;
   backup?: boolean;
   dryRun?: boolean;
+  deep?: boolean;
+  maxFiles?: number;
+  maxFileSizeKb?: number;
   onProgress?: AgentProgress;
 };
 
@@ -28,10 +31,16 @@ export class SetupPipeline {
 
   async run(): Promise<SetupPipelineResult> {
     const rootPath = path.resolve(this.options.rootPath);
-    const snapshot = await createRepositorySnapshot({ rootPath });
+    const snapshot = await createRepositorySnapshot({
+      rootPath,
+      deep: this.options.deep,
+      maxFiles: this.options.maxFiles,
+      maxFileSizeKb: this.options.maxFileSizeKb
+    });
     this.options.onProgress?.("Repository scanned");
     this.options.onProgress?.("File tree generated");
     this.options.onProgress?.("Important files selected");
+    if (this.options.deep) this.options.onProgress?.("Deep module sampling completed");
 
     const outputs = await new AgentOrchestrator(this.options.llm, this.options.onProgress).run(snapshot);
     const files = generateAllFiles(snapshot, outputs);

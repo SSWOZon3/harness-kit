@@ -1,5 +1,5 @@
 import type { AgentOutputs, GeneratedFile, Playbook } from "@harnesskit/shared";
-import { formatMarkdown, list } from "../output/formatMarkdown.js";
+import { formatMarkdown, list, validationMarker } from "../output/formatMarkdown.js";
 
 export function generatePlaybooks(outputs: AgentOutputs): GeneratedFile[] {
   return outputs.playbooks.playbooks.map((playbook) => ({
@@ -11,6 +11,8 @@ export function generatePlaybooks(outputs: AgentOutputs): GeneratedFile[] {
 function renderPlaybook(playbook: Playbook): string {
   return formatMarkdown(`
 # ${playbook.title}
+
+${validationMarker(playbook)}
 
 ## When to use
 

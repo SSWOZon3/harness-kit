@@ -20,5 +20,14 @@ export const RepositorySnapshotSchema = z.object({
   documentationFiles: z.array(FileContentSchema),
   sourceSamples: z.array(FileContentSchema),
   testSamples: z.array(FileContentSchema),
-  packageFiles: z.array(FileContentSchema)
+  packageFiles: z.array(FileContentSchema),
+  moduleSummaries: z.array(z.object({
+    name: z.string(),
+    rootPath: z.string(),
+    fileCount: z.number(),
+    sampledFiles: z.array(z.string()),
+    reason: z.string()
+  })).optional(),
+  selectedModules: z.array(z.string()).optional(),
+  selectionWarnings: z.array(z.string()).optional()
 });

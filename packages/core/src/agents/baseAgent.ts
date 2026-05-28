@@ -5,7 +5,7 @@ import type { AgentContext, HarnessAgent } from "./agents.types.js";
 export abstract class JsonAgent<T> implements HarnessAgent<T> {
   abstract readonly name: string;
   protected abstract readonly schemaName: string;
-  protected abstract readonly schema: z.ZodSchema<T>;
+  protected abstract readonly schema: z.ZodType<T, z.ZodTypeDef, unknown>;
   protected abstract readonly taskPrompt: string;
 
   async run(context: AgentContext): Promise<T> {

@@ -5,6 +5,12 @@ const EvidenceSchema = z.object({
   reason: z.string()
 });
 
+const ConfidenceFields = {
+  confidence: z.number().min(0).max(1).default(0.5),
+  inferred: z.boolean().default(true),
+  requiresHumanValidation: z.boolean().default(true)
+};
+
 export const ProjectOverviewOutputSchema = z.object({
   projectName: z.string(),
   projectType: z.string(),
@@ -18,6 +24,7 @@ export const ProjectOverviewOutputSchema = z.object({
 });
 
 export const ArchitectureOutputSchema = z.object({
+  ...ConfidenceFields,
   architectureStyle: z.string(),
   layers: z.array(z.object({
     name: z.string(),
@@ -60,13 +67,15 @@ export const DomainModelOutputSchema = z.object({
 
 export const CriticalFlowsOutputSchema = z.object({
   flows: z.array(z.object({
+    ...ConfidenceFields,
     name: z.string(),
     description: z.string(),
     entryPoints: z.array(z.string()),
     involvedModules: z.array(z.string()),
     riskLevel: z.enum(["low", "medium", "high", "critical"]),
     whyCritical: z.string(),
-    agentGuidance: z.string()
+    agentGuidance: z.string(),
+    evidence: z.array(EvidenceSchema).default([])
   }))
 });
 
@@ -84,12 +93,14 @@ export const TestingOutputSchema = z.object({
 
 export const SensitiveAreasOutputSchema = z.object({
   sensitiveAreas: z.array(z.object({
+    ...ConfidenceFields,
     name: z.string(),
     pathPatterns: z.array(z.string()),
     severity: z.enum(["low", "medium", "high", "critical"]),
     reason: z.string(),
     requiredHumanReview: z.boolean(),
-    instructionsForAgents: z.string()
+    instructionsForAgents: z.string(),
+    evidence: z.array(EvidenceSchema).default([])
   })),
   secretsHandling: z.array(z.string()),
   riskyCommands: z.array(z.string()),
@@ -110,10 +121,18 @@ export const WorkflowOutputSchema = z.object({
     file: z.string(),
     relevantCommands: z.array(z.string())
   })),
+  commandEvidence: z.array(z.object({
+    command: z.string(),
+    sourceFile: z.string(),
+    inferred: z.boolean(),
+    confidence: z.number().min(0).max(1),
+    requiresHumanValidation: z.boolean()
+  })).default([]),
   definitionOfDone: z.array(z.string())
 });
 
 export const PlaybookSchema = z.object({
+  ...ConfidenceFields,
   id: z.string(),
   title: z.string(),
   whenToUse: z.string(),
@@ -137,7 +156,10 @@ export const FinalReviewOutputSchema = z.object({
     suggestedFix: z.string()
   })),
   recommendedManualReviewItems: z.array(z.string()),
-  isReadyForClientDelivery: z.boolean()
+  isReadyForClientDelivery: z.boolean(),
+  clientDeliveryNotes: z.array(z.string()).default([]),
+  strongestGeneratedAssets: z.array(z.string()).default([]),
+  weakestGeneratedAssets: z.array(z.string()).default([])
 });
 
 export const AgentOutputsSchema = z.object({

@@ -5,7 +5,7 @@ export interface LlmProvider {
     systemPrompt: string;
     userPrompt: string;
     schemaName: string;
-    schema: z.ZodSchema<T>;
+    schema: z.ZodType<T, z.ZodTypeDef, unknown>;
   }): Promise<T>;
 
   generateText(params: {

@@ -13,6 +13,9 @@ export function generateHarnessProject(outputs: AgentOutputs): GeneratedFile {
     },
     architecture: {
       style: outputs.architecture.architectureStyle,
+      confidence: outputs.architecture.confidence,
+      inferred: outputs.architecture.inferred,
+      requires_human_validation: outputs.architecture.requiresHumanValidation,
       layers: outputs.architecture.layers,
       modules: outputs.architecture.moduleBoundaries,
       conventions: outputs.architecture.conventions,
@@ -28,7 +31,10 @@ export function generateHarnessProject(outputs: AgentOutputs): GeneratedFile {
       name: flow.name,
       risk_level: flow.riskLevel,
       entry_points: flow.entryPoints,
-      guidance: flow.agentGuidance
+      guidance: flow.agentGuidance,
+      confidence: flow.confidence,
+      inferred: flow.inferred,
+      requires_human_validation: flow.requiresHumanValidation
     })),
     testing: {
       frameworks: outputs.testing.testFrameworks,
@@ -50,7 +56,10 @@ export function generateHarnessProject(outputs: AgentOutputs): GeneratedFile {
       paths: area.pathPatterns,
       severity: area.severity,
       reason: area.reason,
-      requires_human_review: area.requiredHumanReview
+      requires_human_review: area.requiredHumanReview,
+      confidence: area.confidence,
+      inferred: area.inferred,
+      requires_human_validation: area.requiresHumanValidation
     })),
     agent_rules: {
       always: [
